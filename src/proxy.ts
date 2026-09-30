@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from 'next/server'
 import { updateSession } from '@/lib/supabase/middleware'
 import { createServerClient } from '@supabase/ssr'
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   // Update session
   const response = await updateSession(request)
 
@@ -30,13 +30,13 @@ export async function middleware(request: NextRequest) {
   if (!user && !isLoginPage) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
-    return NextResponse.redirect(url)
+    if (request.nextUrl.pathname.startsWith('/api/')) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); return NextResponse.redirect(url)
   }
 
   if (user && isLoginPage) {
     const url = request.nextUrl.clone()
     url.pathname = '/units' // default protected route
-    return NextResponse.redirect(url)
+    if (request.nextUrl.pathname.startsWith('/api/')) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); return NextResponse.redirect(url)
   }
 
   return response
