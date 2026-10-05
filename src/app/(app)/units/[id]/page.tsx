@@ -78,7 +78,7 @@ export default async function UnitDetailPage({
           unitId={unit.id} 
           modelId={unit.model_id} 
           unitGrade={unit.grade} 
-          offers={offers as any} 
+          offers={offers as { id: string; price: number; grade: string; status: string; offered_at: string; note: string | null; shops: { name: string } }[]} 
           activeShops={activeShops} 
         />
       </div>
