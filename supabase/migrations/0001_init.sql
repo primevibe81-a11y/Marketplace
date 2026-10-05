@@ -42,7 +42,7 @@ create table public.phone_models (
   unique nulls not distinct (owner_id, brand, name, ram_gb, storage_gb)
 );
 
-create sequence public.unit_code_seq;
+drop sequence if exists public.unit_code_seq; create sequence public.unit_code_seq;
 
 create table public.units (
   id uuid primary key default gen_random_uuid(),
