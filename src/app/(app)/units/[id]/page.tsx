@@ -1,6 +1,9 @@
 import { getUnitDetail } from '@/server/units'
 import { formatRupiah } from '@/lib/format'
 import { ImeiRevealer } from './ImeiRevealer'
+import { OfferList } from './OfferList'
+import { getOffersByUnit } from '@/server/offers'
+import { getActiveShops } from '@/server/shops'
 
 export default async function UnitDetailPage({
   params,
@@ -9,6 +12,11 @@ export default async function UnitDetailPage({
 }) {
   const resolvedParams = await params
   const unit = await getUnitDetail(resolvedParams.id)
+  
+  const [offers, activeShops] = await Promise.all([
+    getOffersByUnit(resolvedParams.id),
+    getActiveShops()
+  ])
 
   return (
     <div className="space-y-6 max-w-3xl mx-auto">
@@ -65,9 +73,14 @@ export default async function UnitDetailPage({
         </div>
       </div>
 
-      {/* Tawaran, saran keputusan, laba akan ditambahkan di T1.8 / T1.9 */}
-      <div className="rounded-lg border bg-card p-4 text-center text-muted-foreground text-sm">
-        (Tawaran dan Perbandingan Harga akan ditambahkan di task selanjutnya)
+      <div className="rounded-lg border bg-card p-4">
+        <OfferList 
+          unitId={unit.id} 
+          modelId={unit.model_id} 
+          unitGrade={unit.grade} 
+          offers={offers as any} 
+          activeShops={activeShops} 
+        />
       </div>
     </div>
   )
