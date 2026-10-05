@@ -3,7 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
-import { isValidImei, normalizeImei } from '@/lib/imei'
+import { isValidImei, normalizeImei, maskImei } from '@/lib/imei'
 import { parseRupiah } from '@/lib/format'
 
 const unitSchema = z.object({
@@ -72,4 +72,108 @@ export async function createUnit(formData: FormData) {
   
   revalidatePath('/units')
   return { success: true, unit: data as { id: string, code: string } }
+}
+
+export async function getUnits(search?: string, status?: string) {
+  const supabase = await createClient()
+  
+  let unitIdsToInclude: string[] | null = null
+
+  if (search) {
+    const term = `%${search}%`
+    
+    // Find units matching code
+    const { data: codeMatches } = await supabase
+      .from('units')
+      .select('id')
+      .ilike('code', term)
+
+    // Find units matching identifiers (IMEI 4+ digits)
+    const { data: identMatches } = await supabase
+      .from('unit_identifiers')
+      .select('unit_id')
+      .ilike('value', term)
+
+    const ids = new Set<string>()
+    codeMatches?.forEach(u => ids.add(u.id))
+    identMatches?.forEach(i => ids.add(i.unit_id))
+    
+    unitIdsToInclude = Array.from(ids)
+    
+    // If search yielded no IDs, we can return empty early
+    if (unitIdsToInclude.length === 0) {
+      return []
+    }
+  }
+
+  let query = supabase
+    .from('units')
+    .select(`
+      *,
+      phone_models (*),
+      unit_identifiers (kind, value)
+    `)
+    .order('created_at', { ascending: false })
+
+  if (status) {
+    query = query.eq('status', status)
+  }
+
+  if (unitIdsToInclude) {
+    query = query.in('id', unitIdsToInclude)
+  }
+
+  const { data, error } = await query
+
+  if (error) throw new Error(error.message)
+
+  // Mask the identifiers before sending to client
+  const maskedData = data.map(unit => ({
+    ...unit,
+    unit_identifiers: unit.unit_identifiers.map((ident: { kind: string; value: string }) => ({
+      kind: ident.kind,
+      value: maskImei(ident.value)
+    }))
+  }))
+
+  return maskedData
+}
+
+export async function getUnitDetail(id: string) {
+  const supabase = await createClient()
+  
+  const { data, error } = await supabase
+    .from('units')
+    .select(`
+      *,
+      phone_models (*),
+      unit_identifiers (kind, value)
+    `)
+    .eq('id', id)
+    .single()
+
+  if (error || !data) throw new Error(error?.message || 'Unit tidak ditemukan')
+
+  // Mask the identifiers
+  const maskedData = {
+    ...data,
+    unit_identifiers: data.unit_identifiers.map((ident: { kind: string; value: string }) => ({
+      kind: ident.kind,
+      value: maskImei(ident.value)
+    }))
+  }
+
+  return maskedData
+}
+
+export async function getFullIdentifiers(unitId: string) {
+  // Dipanggil lewat server action dari Client Component saat "Tampilkan" diklik.
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('unit_identifiers')
+    .select('kind, value')
+    .eq('unit_id', unitId)
+
+  if (error) return { error: error.message }
+  return { data }
 }
