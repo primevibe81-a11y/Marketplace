@@ -24,9 +24,9 @@ export async function proxy(request: NextRequest) {
     return withSessionCookies(NextResponse.redirect(url), response)
   }
 
-  if (user && isLoginPage) {
+  if (user && (isLoginPage || pathname === '/')) {
     const url = request.nextUrl.clone()
-    url.pathname = '/units'
+    url.pathname = '/dashboard'
     url.search = ''
     return withSessionCookies(NextResponse.redirect(url), response)
   }

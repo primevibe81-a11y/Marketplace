@@ -26,9 +26,11 @@ const initialState: FormState = { success: false }
 export function ObservationList({ 
   modelId, 
   observations,
+  currentGrade = 'normal'
 }: { 
   modelId: string, 
   observations: Observation[],
+  currentGrade?: string
 }) {
   const [priceStr, setPriceStr] = useState('')
   const [isFormOpen, setIsFormOpen] = useState(false)
@@ -90,7 +92,7 @@ export function ObservationList({
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium">Kondisi (Grade)</label>
-                <select name="grade" defaultValue="normal" required className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+                <select name="grade" defaultValue={currentGrade} required className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
                   <option value="mulus">Mulus</option>
                   <option value="normal">Normal</option>
                   <option value="minus">Minus</option>
@@ -166,7 +168,7 @@ export function ObservationList({
                       </span>
                       {o.url && (
                         <a href={o.url} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline">
-                          Tautan ↗
+                          Tautan â†—
                         </a>
                       )}
                     </div>

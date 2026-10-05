@@ -19,9 +19,14 @@ export default async function UnitsPage({
           <h1 className="text-2xl font-bold tracking-tight">Daftar Unit</h1>
           <p className="text-muted-foreground">Kelola stok dan lacak status unit HP.</p>
         </div>
-        <Link href="/units/new">
-          <Button>+ Tambah Unit</Button>
-        </Link>
+        <div className="flex gap-2">
+          <a href="/api/export/units" download>
+            <Button variant="outline">Ekspor CSV</Button>
+          </a>
+          <Link href="/units/new">
+            <Button>+ Tambah Unit</Button>
+          </Link>
+        </div>
       </div>
 
       <UnitFilters defaultSearch={resolvedSearchParams.search} defaultStatus={resolvedSearchParams.status} />

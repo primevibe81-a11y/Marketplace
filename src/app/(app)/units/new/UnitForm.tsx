@@ -5,6 +5,7 @@ import { createUnit } from '@/server/units'
 import { Button } from '@/components/ui/button'
 import { useRouter } from 'next/navigation'
 import { formatRupiah } from '@/lib/format'
+import { ImeiScanner } from '@/components/ImeiScanner'
 
 type PhoneModel = {
   id: string
@@ -26,6 +27,8 @@ export function UnitForm({ models }: { models: PhoneModel[] }) {
   const router = useRouter()
   const [acquiredPriceStr, setAcquiredPriceStr] = useState('')
   const [extraCostStr, setExtraCostStr] = useState('')
+  const [imei1, setImei1] = useState('')
+  const [imei2, setImei2] = useState('')
   
   const [state, formAction, isPending] = useActionState(async (prevState: FormState, formData: FormData): Promise<FormState> => {
     const res = await createUnit(formData)
@@ -69,18 +72,24 @@ export function UnitForm({ models }: { models: PhoneModel[] }) {
           <h2 className="text-lg font-semibold border-b pb-2">Identitas Unik</h2>
           <div className="grid sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">IMEI 1 (Wajib, 15 digit)</label>
+              <div className="flex justify-between items-center mb-1">
+                <label className="text-sm font-medium">IMEI 1 (Wajib, 15 digit)</label>
+                <div className="w-32"><ImeiScanner onScan={setImei1} /></div>
+              </div>
               <input 
-                name="imei1" 
+                name="imei1" value={imei1} onChange={(e) => setImei1(e.target.value)} 
                 required 
                 placeholder="Misal: 490154203237518"
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-mono" 
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">IMEI 2 (Opsional)</label>
+              <div className="flex justify-between items-center mb-1">
+                <label className="text-sm font-medium">IMEI 2 (Opsional)</label>
+                <div className="w-32"><ImeiScanner onScan={setImei2} /></div>
+              </div>
               <input 
-                name="imei2" 
+                name="imei2" value={imei2} onChange={(e) => setImei2(e.target.value)} 
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-mono" 
               />
             </div>
