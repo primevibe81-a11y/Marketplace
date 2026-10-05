@@ -39,7 +39,7 @@ export async function getObservations(modelId: string) {
   return data
 }
 
-export async function saveObservation(formData: FormData) {
+export async function getEstimates(modelId: string) { const supabase = await createClient(); const { data } = await supabase.from('market_estimates').select('*').eq('model_id', modelId).order('fetched_at', { ascending: false }); return data || []; } export async function saveObservation(formData: FormData) {
   const supabase = await createClient()
 
   const parsed = observationSchema.safeParse({

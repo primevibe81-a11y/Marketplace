@@ -1,5 +1,6 @@
-import { getModelDetail, getObservations } from '@/server/observations'
+import { getModelDetail, getObservations, getEstimates } from '@/server/observations'
 import { ObservationList } from './ObservationList'
+import { AiEstimates } from './AiEstimates'
 import Link from 'next/link'
 
 export default async function ModelDetailPage({
@@ -9,10 +10,14 @@ export default async function ModelDetailPage({
 }) {
   const resolvedParams = await params
   const model = await getModelDetail(resolvedParams.id)
-  const observations = await getObservations(resolvedParams.id)
+  
+  const [observations, estimates] = await Promise.all([
+    getObservations(resolvedParams.id),
+    getEstimates(resolvedParams.id)
+  ])
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
+    <div className="space-y-6 max-w-5xl mx-auto">
       <div>
         <div className="flex items-center gap-2 mb-2 text-sm text-muted-foreground">
           <Link href="/models" className="hover:underline">← Kembali ke Katalog Model</Link>
@@ -27,15 +32,19 @@ export default async function ModelDetailPage({
         </p>
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-6">
-        <div className="rounded-lg border bg-card p-4">
-          <ObservationList modelId={model.id} observations={observations as any} />
+      <div className="grid lg:grid-cols-2 gap-6 items-start">
+        <div className="rounded-lg border bg-card p-4 overflow-x-auto">
+          <ObservationList 
+            modelId={model.id} 
+            observations={observations as { id: string; price: number; grade: string; channel: string; listing_state: string; url: string | null; note: string | null; observed_at: string }[]} 
+          />
         </div>
-        <div className="rounded-lg border bg-card p-4">
-          <h2 className="font-semibold text-lg mb-4">Estimasi AI (T1.11)</h2>
-          <div className="p-4 text-center text-sm text-muted-foreground border rounded-md">
-            Fitur Estimasi AI akan ditambahkan di task selanjutnya.
-          </div>
+        <div className="rounded-lg border bg-card p-4 overflow-x-auto">
+          <AiEstimates 
+            modelId={model.id}
+            grade="normal" // Hardcoded default for MVP, can be expanded to toggle later
+            estimates={estimates as { id: string; price_p25: number; price_p50: number; price_p75: number; sample_count: number; confidence: string; sources_urls: string; fetched_at: string }[]} 
+          />
         </div>
       </div>
     </div>
