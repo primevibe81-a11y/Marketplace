@@ -108,7 +108,7 @@ export async function POST(req: Request) {
           error_message: e instanceof Error ? e.message : String(e)
         }).eq('id', runId)
       }
-      return NextResponse.json({ error: 'Gagal memanggil AI Provider' }, { status: 500 })
+      return NextResponse.json({ error: 'Gagal memanggil AI Provider: ' + (e instanceof Error ? e.message : String(e)) }, { status: 500 })
     }
 
     // 6. Jalankan filterOutliers dan summarize
