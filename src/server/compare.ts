@@ -67,7 +67,7 @@ export async function getCompareData() {
       return acc
     }, {} as Record<string, { price: number; offered_at: string } | null>)
 
-    const allPrices = Object.values(latestOffersPerShop).filter(Boolean).map(o => o!.price)
+    const allPrices = Object.values(latestOffersPerShop).filter((o): o is { price: number; offered_at: string } => o !== null).map(o => o.price)
     const bestBid = allPrices.length > 0 ? Math.max(...allPrices) : 0
     
     const refPriceInfo = marketPerModel[unit.model_id]
