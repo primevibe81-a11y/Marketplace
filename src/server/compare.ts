@@ -3,11 +3,18 @@
 import { createClient } from '@/lib/supabase/server'
 import { referencePrice, discountFastSale, suggest } from '@/lib/pricing'
 
+import { getSettings } from './settings'
+
 export async function getCompareData() {
   const supabase = await createClient()
 
-  const { data: settingsData } = await supabase.from('settings').select('*').single()
-  const settings = settingsData || { fast_sale_threshold: 0.15, stale_offer_days: 14, stock_age_days: 30 }
+  const settings = await getSettings()
+  // convert settings back to decimal for calculations
+  const calcSettings = {
+    ...settings,
+    fast_sale_threshold: settings.fast_sale_threshold / 100,
+    margin_target: settings.margin_target / 100
+  }
 
   const { data: shops } = await supabase.from('shops').select('*').eq('is_active', true).order('name')
   const activeShops = shops || []
@@ -85,7 +92,7 @@ export async function getCompareData() {
     const stockDays = Math.floor((new Date().getTime() - acquiredAt.getTime()) / (1000 * 3600 * 24))
 
     const suggestion = bestBid > 0 && medianPasaran > 0 
-      ? suggest({ discount, stockDays }, settings)
+      ? suggest({ discount, stockDays }, calcSettings)
       : null
 
     return {
@@ -99,5 +106,5 @@ export async function getCompareData() {
     }
   })
 
-  return { comparisonUnits, activeShops, settings }
+  return { comparisonUnits, activeShops, settings: calcSettings }
 }

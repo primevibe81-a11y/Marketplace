@@ -8,7 +8,9 @@
     "scripting"
   ],
   "host_permissions": [
-    "https://www.facebook.com/marketplace/*"
+    "https://www.facebook.com/marketplace/*",
+    "https://*.vercel.app/*",
+    "http://localhost/*"
   ],
   "action": {
     "default_popup": "popup.html"

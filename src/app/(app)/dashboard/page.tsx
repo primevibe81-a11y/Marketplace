@@ -5,6 +5,8 @@ import { Card, CardContent } from '@/components/ui/card'
 import { formatRupiah } from '@/lib/format'
 import { PlusCircle, ShoppingBag, Eye, TrendingUp, AlertTriangle } from 'lucide-react'
 
+import { getSettings } from '@/server/settings'
+
 export default async function DashboardPage() {
   const supabase = await createClient()
 
@@ -16,15 +18,15 @@ export default async function DashboardPage() {
     { data: activeUnits },
     { data: openOffers },
     { data: soldUnits },
-    { data: settingsData }
+    settingsData
   ] = await Promise.all([
     supabase.from('units').select('id, code, status, acquired_price, extra_cost, acquired_at, created_at, phone_models(brand, name)').in('status', ['bought', 'ready', 'listed']),
     supabase.from('offers').select('id, price, status, offered_at, shops(name), phone_models(brand, name), unit_id').eq('status', 'open').order('offered_at', { ascending: false }),
     supabase.from('units').select('acquired_price, extra_cost, sold_price').eq('status', 'sold').gte('sold_at', startOfMonth),
-    supabase.from('settings').select('stock_age_days').single()
+    getSettings()
   ])
 
-  const STOCK_AGE_DAYS = settingsData?.stock_age_days || 5
+  const STOCK_AGE_DAYS = settingsData.stock_age_days
 
   const totalCapital = activeUnits?.reduce((acc: number, u: any) => acc + (u.acquired_price || 0) + (u.extra_cost || 0), 0) || 0
 

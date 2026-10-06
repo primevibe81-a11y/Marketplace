@@ -8,9 +8,17 @@ document.addEventListener('DOMContentLoaded', () => {
   const statusEl = document.getElementById('status');
 
   btn.addEventListener('click', async () => {
-    const modelId = document.getElementById('modelId').value.trim();
+    let modelIdRaw = document.getElementById('modelId').value.trim();
     const hostUrl = document.getElementById('hostUrl').value.trim().replace(/\/$/, '');
     const secret = document.getElementById('secret').value.trim();
+
+    // Jika pengguna tidak sengaja menempelkan tautan lengkap (contoh: https://.../models/123-456...)
+    // Ambil bagian terakhir dari URL tersebut
+    let modelId = modelIdRaw;
+    if (modelIdRaw.includes('/')) {
+      const parts = modelIdRaw.split('/');
+      modelId = parts[parts.length - 1];
+    }
 
     if (!modelId || !hostUrl || !secret) {
       statusEl.textContent = 'Harap isi semua kolom!';
