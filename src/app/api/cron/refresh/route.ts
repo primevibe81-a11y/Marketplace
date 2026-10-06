@@ -55,7 +55,7 @@ export async function GET(request: Request) {
 
       // Fetch AI Estimate (Google Search Grounding)
       const query = `${model.brand} ${model.name} ${model.ram_gb || ''}GB ${model.storage_gb || ''}GB`
-      const provider = new GeminiProvider(process.env.GEMINI_API_KEY!, process.env.GEMINI_MODEL || "gemini-2.5-pro")
+      const provider = new GeminiProvider(process.env.GEMINI_API_KEY!, process.env.GEMINI_MODEL || "gemini-3.1-pro-preview")
       const rawRes = await provider.estimate(model.brand, model.name, model.ram_gb, model.storage_gb, 'normal')
       
       const prices = rawRes.listings.map((l: any) => l.price_idr)
