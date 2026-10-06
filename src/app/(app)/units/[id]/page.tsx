@@ -49,7 +49,6 @@ export default async function UnitDetailPage({
           {unit.phone_models.brand} {unit.phone_models.name}
         </h1>
         <p className="text-muted-foreground">
-          Grade: <span className="font-medium capitalize">{unit.grade}</span> | 
           RAM/Storage: <span className="font-medium">{unit.phone_models.ram_gb || '?'}GB / {unit.phone_models.storage_gb || '?'}GB</span>
         </p>
       </div>

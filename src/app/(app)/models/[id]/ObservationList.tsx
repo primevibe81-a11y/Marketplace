@@ -4,6 +4,8 @@ import { useActionState, useState } from 'react'
 import { saveObservation } from '@/server/observations'
 import { Button } from '@/components/ui/button'
 import { formatRupiah } from '@/lib/format'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 
 type Observation = {
   id: string
@@ -36,6 +38,8 @@ export function ObservationList({
   const [isFormOpen, setIsFormOpen] = useState(false)
 
   const [state, formAction, isPending] = useActionState(async (prevState: FormState, formData: FormData): Promise<FormState> => {
+    // Inject grade implicitly since it's hidden from UI
+    formData.set('grade', 'normal')
     const res = await saveObservation(formData)
     if (res.success) {
       setIsFormOpen(false)
@@ -61,7 +65,7 @@ export function ObservationList({
 
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Platform / Kanal</label>
+                <Label>Platform / Kanal</Label>
                 <select name="channel" defaultValue="fb_marketplace" required className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
                   <option value="fb_marketplace">FB Marketplace</option>
                   <option value="olx">OLX</option>
@@ -71,10 +75,10 @@ export function ObservationList({
                 </select>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Harga Listing</label>
+                <Label>Harga Listing</Label>
                 <div className="relative">
                   <span className="absolute left-3 top-2.5 text-sm text-muted-foreground">Rp</span>
-                  <input 
+                  <Input 
                     name="price" 
                     required 
                     value={priceStr}
@@ -86,21 +90,12 @@ export function ObservationList({
                         setPriceStr('')
                       }
                     }}
-                    className="flex h-10 w-full rounded-md border border-input bg-background pl-8 pr-3 py-2 text-sm" 
+                    className="pl-8" 
                   />
                 </div>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Kondisi (Grade)</label>
-                <select name="grade" defaultValue={currentGrade} required className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
-                  <option value="mulus">Mulus</option>
-                  <option value="normal">Normal</option>
-                  <option value="minus">Minus</option>
-                  <option value="rusak">Rusak</option>
-                </select>
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Status Listing</label>
+                <Label>Status Listing</Label>
                 <select name="listing_state" defaultValue="active" required className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
                   <option value="active">Aktif (Masih Ada)</option>
                   <option value="sold">Terjual</option>
@@ -109,20 +104,18 @@ export function ObservationList({
             </div>
             
             <div className="space-y-2">
-              <label className="text-sm font-medium">Tautan URL (Opsional)</label>
-              <input 
+              <Label>Tautan URL (Opsional)</Label>
+              <Input 
                 name="url" 
                 type="url"
                 placeholder="https://..."
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" 
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Catatan Tambahan (Opsional)</label>
-              <input 
+              <Label>Catatan Tambahan (Opsional)</Label>
+              <Input 
                 name="note" 
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" 
               />
             </div>
 
@@ -168,11 +161,10 @@ export function ObservationList({
                       </span>
                       {o.url && (
                         <a href={o.url} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline">
-                          Tautan â†—
+                          Tautan ↗
                         </a>
                       )}
                     </div>
-                    <div className="text-xs text-muted-foreground mt-1 capitalize">Grade: {o.grade}</div>
                     {o.note && <div className="text-xs text-muted-foreground mt-1">{o.note}</div>}
                   </td>
                   <td className="p-3 text-right font-semibold">

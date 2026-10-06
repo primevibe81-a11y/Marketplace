@@ -39,14 +39,15 @@ export async function getCompareData() {
     .select('*')
     .in('model_id', modelIds)
 
-  // Keyed by `${model_id}_${grade}`
+  // Keyed by `${model_id}`
   const marketData: Record<string, ReturnType<typeof referencePrice>> = {}
   
   units.forEach(unit => {
-    const key = `${unit.model_id}_${unit.grade}`
+    const key = unit.model_id
     if (marketData[key]) return
 
-    const obs = observations?.filter(o => o.model_id === unit.model_id && o.grade === unit.grade && o.channel === 'fb_marketplace') || []
+    // Mengambil semua observasi aktif dari semua channel, tidak hanya FB
+    const obs = observations?.filter(o => o.model_id === unit.model_id) || []
     let fbObservations = null
     if (obs.length > 0) {
       const prices = obs.map(o => o.price).sort((a, b) => a - b)
@@ -54,7 +55,7 @@ export async function getCompareData() {
       fbObservations = { median, activeCount: prices.length }
     }
 
-    const est = estimates?.filter(e => e.model_id === unit.model_id && e.grade === unit.grade).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()) || []
+    const est = estimates?.filter(e => e.model_id === unit.model_id).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()) || []
     let aiEstimate = null
     if (est.length > 0 && est[0].price_p50) {
       aiEstimate = { median: est[0].price_p50 }
@@ -75,7 +76,7 @@ export async function getCompareData() {
     const allPrices = Object.values(latestOffersPerShop).filter((o): o is { price: number; offered_at: string } => o !== null).map(o => o.price)
     const bestBid = allPrices.length > 0 ? Math.max(...allPrices) : 0
     
-    const refPriceInfo = marketData[`${unit.model_id}_${unit.grade}`] || { price: null, source: null, fb_median: null, ai_median: null }
+    const refPriceInfo = marketData[unit.model_id] || { price: null, source: null, fb_median: null, ai_median: null }
     const medianPasaran = refPriceInfo.price || 0
 
     const discount = discountFastSale(bestBid, medianPasaran)

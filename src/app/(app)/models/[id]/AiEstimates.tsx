@@ -37,7 +37,7 @@ export function AiEstimates({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="font-semibold text-lg">Estimasi AI (Grade: {grade})</h2>
+        <h2 className="font-semibold text-lg">Estimasi AI</h2>
         <Button size="sm" onClick={handleEstimate} disabled={true}>
           Perbarui Estimasi (Terkunci)
         </Button>
