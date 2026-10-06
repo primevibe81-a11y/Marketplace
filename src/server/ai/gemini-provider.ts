@@ -4,7 +4,7 @@ export class GeminiProvider implements PriceProvider {
   private apiKey: string
   private model: string
 
-  constructor(apiKey: string, model: string = 'gemini-3.1-pro-preview') {
+  constructor(apiKey: string, model: string = 'gemini-flash-latest') {
     this.apiKey = apiKey
     this.model = model
   }

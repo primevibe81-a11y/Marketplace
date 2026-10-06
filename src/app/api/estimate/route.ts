@@ -96,7 +96,7 @@ export async function POST(req: Request) {
     }).select('id').single()
     const runId = runRecord?.id
 
-    const provider = new GeminiProvider(apiKey, process.env.GEMINI_MODEL || 'gemini-3.1-pro-preview')
+    const provider = new GeminiProvider(apiKey, process.env.GEMINI_MODEL || 'gemini-flash-latest')
     
     let result
     try {
