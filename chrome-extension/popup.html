@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; width: 300px; padding: 16px; margin: 0; }
+    h2 { font-size: 16px; margin-top: 0; margin-bottom: 12px; }
+    .form-group { margin-bottom: 12px; }
+    label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 4px; color: #333; }
+    input[type="text"], select { width: 100%; box-sizing: border-box; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; }
+    button { width: 100%; background: #0066cc; color: white; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 8px; }
+    button:hover { background: #0052a3; }
+    button:disabled { background: #cccccc; cursor: not-allowed; }
+    #status { font-size: 12px; margin-top: 12px; text-align: center; color: #0066cc; font-weight: bold; }
+    .error { color: #d32f2f !important; }
+    .success { color: #2e7d32 !important; }
+  </style>
+</head>
+<body>
+  <h2>Scraper FB Marketplace</h2>
+  
+  <div class="form-group">
+    <label>ID Model (UUID dari aplikasi):</label>
+    <input type="text" id="modelId" placeholder="Contoh: a1b2c3d4-..." />
+  </div>
+
+  <div class="form-group">
+    <label>Host Aplikasi:</label>
+    <input type="text" id="hostUrl" value="http://localhost:3000" placeholder="https://..." />
+  </div>
+
+  <div class="form-group">
+    <label>Cron Secret (API Key):</label>
+    <input type="text" id="secret" placeholder="Rahasia CRON_SECRET" />
+  </div>
+
+  <button id="scanBtn">Sedot Harga Sekarang</button>
+  <div id="status"></div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

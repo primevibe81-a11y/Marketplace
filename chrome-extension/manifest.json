@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "Pemantau FB Marketplace",
+  "version": "1.0.0",
+  "description": "Menyedot harga HP dari Facebook Marketplace langsung ke aplikasi Pemantau HP.",
+  "permissions": [
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://www.facebook.com/marketplace/*"
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  }
+}
