@@ -13,6 +13,9 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  // SEMENTARA: Fitur estimasi AI dikunci karena masalah kuota provider
+  return NextResponse.json({ success: true, message: 'Cron bypassed (AI estimation locked)' })
+
   const supabase = createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!, // Use service role for cron jobs

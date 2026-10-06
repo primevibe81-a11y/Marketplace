@@ -30,31 +30,21 @@ export function AiEstimates({
   const router = useRouter()
 
   const handleEstimate = async () => {
-    setLoading(true)
-    setError(null)
-    try {
-      const res = await fetch('/api/estimate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ modelId, grade, force: true })
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Terjadi kesalahan')
-      router.refresh()
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : String(e))
-    } finally {
-      setLoading(false)
-    }
+    // Fitur estimasi AI dikunci sementara
+    return
   }
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="font-semibold text-lg">Estimasi AI (Grade: {grade})</h2>
-        <Button size="sm" onClick={handleEstimate} disabled={loading}>
-          {loading ? 'Mencari...' : 'Perbarui Estimasi'}
+        <Button size="sm" onClick={handleEstimate} disabled={true}>
+          Perbarui Estimasi (Terkunci)
         </Button>
+      </div>
+
+      <div className="bg-yellow-50 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-900 text-yellow-800 dark:text-yellow-200 p-3 rounded-md text-sm">
+        <strong>Perhatian:</strong> Pencarian harga menggunakan AI dimatikan sementara waktu karena kendala limit kuota harian provider AI. Silakan merujuk pada acuan harga Facebook (Observasi Manual).
       </div>
 
       {error && <p className="text-sm text-destructive">{error}</p>}
