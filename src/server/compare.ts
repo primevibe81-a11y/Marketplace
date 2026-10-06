@@ -28,19 +28,25 @@ export async function getCompareData() {
 
   const modelIds = Array.from(new Set(units.map(u => u.model_id)))
   
-  const { data: observations } = await supabase
+  const { data: observations, error: obsError } = await supabase
     .from('market_observations')
     .select('*')
     .in('model_id', modelIds)
-    .eq('is_active', true)
+    .eq('listing_state', 'active')
 
   const { data: estimates } = await supabase
     .from('market_estimates')
     .select('*')
     .in('model_id', modelIds)
 
-  const marketPerModel = modelIds.reduce((acc, mid) => {
-    const obs = observations?.filter(o => o.model_id === mid && o.channel === 'fb_marketplace') || []
+  // Keyed by `${model_id}_${grade}`
+  const marketData: Record<string, ReturnType<typeof referencePrice>> = {}
+  
+  units.forEach(unit => {
+    const key = `${unit.model_id}_${unit.grade}`
+    if (marketData[key]) return
+
+    const obs = observations?.filter(o => o.model_id === unit.model_id && o.grade === unit.grade && o.channel === 'fb_marketplace') || []
     let fbObservations = null
     if (obs.length > 0) {
       const prices = obs.map(o => o.price).sort((a, b) => a - b)
@@ -48,15 +54,14 @@ export async function getCompareData() {
       fbObservations = { median, activeCount: prices.length }
     }
 
-    const est = estimates?.filter(e => e.model_id === mid).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()) || []
+    const est = estimates?.filter(e => e.model_id === unit.model_id && e.grade === unit.grade).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()) || []
     let aiEstimate = null
     if (est.length > 0 && est[0].price_p50) {
       aiEstimate = { median: est[0].price_p50 }
     }
 
-    acc[mid] = referencePrice({ fbObservations, aiEstimate })
-    return acc
-  }, {} as Record<string, ReturnType<typeof referencePrice>>)
+    marketData[key] = referencePrice({ fbObservations, aiEstimate })
+  })
 
   const comparisonUnits = units.map(unit => {
     const unitOffers = offers?.filter(o => o.unit_id === unit.id) || []
@@ -70,7 +75,7 @@ export async function getCompareData() {
     const allPrices = Object.values(latestOffersPerShop).filter((o): o is { price: number; offered_at: string } => o !== null).map(o => o.price)
     const bestBid = allPrices.length > 0 ? Math.max(...allPrices) : 0
     
-    const refPriceInfo = marketPerModel[unit.model_id]
+    const refPriceInfo = marketData[`${unit.model_id}_${unit.grade}`] || { price: null, source: null, fb_median: null, ai_median: null }
     const medianPasaran = refPriceInfo.price || 0
 
     const discount = discountFastSale(bestBid, medianPasaran)
