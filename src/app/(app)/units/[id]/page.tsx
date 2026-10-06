@@ -6,6 +6,7 @@ import { getActiveShops } from '@/server/shops'
 import { getObservations, getEstimates } from '@/server/observations'
 import { referencePrice, summarize } from '@/lib/pricing'
 import { ProfitCalculator } from './ProfitCalculator'
+import { SellUnitDialog } from './SellUnitDialog'
 
 export default async function UnitDetailPage({
   params,
@@ -22,35 +23,39 @@ export default async function UnitDetailPage({
     getEstimates(unit.model_id)
   ])
 
-  // Filter observations & estimates by grade
-  const gradeObs = observations.filter(o => o.grade === unit.grade)
-  const gradeEst = estimates.find(e => e.grade === unit.grade)
+  // Aggregate all observations across channels
+  const fbActivePrices = observations.filter(o => o.listing_state === 'active').map(o => o.price)
+  const fbStats = summarize(fbActivePrices, fbActivePrices.length) 
   
-  const fbActivePrices = gradeObs.filter(o => o.listing_state === 'active').map(o => o.price)
-  const fbStats = summarize(fbActivePrices, fbActivePrices.length) // simplified source count
+  const est = estimates.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
   
   const ref = referencePrice({
     fbObservations: fbActivePrices.length > 0 ? { median: fbStats.median, activeCount: fbActivePrices.length } : null,
-    aiEstimate: gradeEst ? { median: gradeEst.price_p50 } : null
+    aiEstimate: est.length > 0 && est[0].price_p50 ? { median: est[0].price_p50 } : null
   })
 
   const bestBid = offers.length > 0 ? Math.max(...offers.map(o => o.price)) : null
 
   return (
     <div className="space-y-6 max-w-3xl mx-auto">
-      <div>
-        <div className="flex items-center gap-2 mb-2">
-          <span className="font-mono text-sm font-semibold bg-muted px-2 py-0.5 rounded">{unit.code}</span>
-          <span className="text-xs uppercase tracking-wider font-semibold bg-blue-100 text-blue-800 px-2 py-0.5 rounded">
-            {unit.status}
-          </span>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <span className="font-mono text-sm font-semibold bg-muted px-2 py-0.5 rounded">{unit.code}</span>
+            <span className={`text-xs uppercase tracking-wider font-semibold px-2 py-0.5 rounded ${unit.status === 'sold' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}`}>
+              {unit.status}
+            </span>
+          </div>
+          <h1 className="text-2xl font-bold tracking-tight">
+            {unit.phone_models.brand} {unit.phone_models.name}
+          </h1>
+          <p className="text-muted-foreground">
+            RAM/Storage: <span className="font-medium">{unit.phone_models.ram_gb || '?'}GB / {unit.phone_models.storage_gb || '?'}GB</span>
+          </p>
         </div>
-        <h1 className="text-2xl font-bold tracking-tight">
-          {unit.phone_models.brand} {unit.phone_models.name}
-        </h1>
-        <p className="text-muted-foreground">
-          RAM/Storage: <span className="font-medium">{unit.phone_models.ram_gb || '?'}GB / {unit.phone_models.storage_gb || '?'}GB</span>
-        </p>
+        {unit.status !== 'sold' && (
+          <SellUnitDialog unitId={unit.id} activeShops={activeShops} />
+        )}
       </div>
 
       <div className="grid sm:grid-cols-2 gap-6 items-start">
@@ -86,6 +91,7 @@ export default async function UnitDetailPage({
             extraCost={unit.extra_cost}
             bestBid={bestBid}
             referencePrice={ref.price}
+            soldPrice={unit.sold_price}
           />
         </div>
       </div>
