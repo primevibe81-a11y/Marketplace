@@ -12,6 +12,16 @@ const observationsSchema = z.object({
   })).min(1).max(50)
 })
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+}
+
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders })
+}
+
 export async function POST(request: Request) {
   try {
     // 1. Verifikasi keamanan (menggunakan rahasia yang sama dengan Cron)
@@ -19,7 +29,7 @@ export async function POST(request: Request) {
     const secret = process.env.CRON_SECRET
 
     if (!secret || authHeader !== `Bearer ${secret}`) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: corsHeaders })
     }
 
     // 2. Parse body request
@@ -27,7 +37,7 @@ export async function POST(request: Request) {
     const parsed = observationsSchema.safeParse(body)
 
     if (!parsed.success) {
-      return NextResponse.json({ error: 'Format data tidak valid', details: parsed.error.issues }, { status: 400 })
+      return NextResponse.json({ error: 'Format data tidak valid', details: parsed.error.issues }, { status: 400, headers: corsHeaders })
     }
 
     const { model_id, observations } = parsed.data
@@ -45,7 +55,7 @@ export async function POST(request: Request) {
       .single()
 
     if (settingsError || !settingsData) {
-      return NextResponse.json({ error: 'Gagal menemukan ID pemilik aplikasi' }, { status: 500 })
+      return NextResponse.json({ error: 'Gagal menemukan ID pemilik aplikasi' }, { status: 500, headers: corsHeaders })
     }
 
     const owner_id = settingsData.owner_id
@@ -69,15 +79,15 @@ export async function POST(request: Request) {
       .insert(payload)
 
     if (insertError) {
-      return NextResponse.json({ error: 'Gagal menyimpan ke database', details: insertError.message }, { status: 500 })
+      return NextResponse.json({ error: 'Gagal menyimpan ke database', details: insertError.message }, { status: 500, headers: corsHeaders })
     }
 
     return NextResponse.json({ 
       success: true, 
       message: `${payload.length} pengamatan harga FB berhasil ditambahkan` 
-    })
+    }, { headers: corsHeaders })
 
   } catch (err: any) {
-    return NextResponse.json({ error: 'Kesalahan internal server', message: err?.message }, { status: 500 })
+    return NextResponse.json({ error: 'Kesalahan internal server', message: err?.message }, { status: 500, headers: corsHeaders })
   }
 }
