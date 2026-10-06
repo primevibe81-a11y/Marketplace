@@ -1,26 +1,27 @@
-import Link from 'next/link'
 import { ThemeToggle } from '@/components/ThemeToggle'
-
+import { DesktopNav, BottomNav } from '@/components/Navigation'
+import { ViewTransition } from 'react'
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="border-b px-4 py-3 flex items-center justify-between">
-        <div className="font-bold flex-shrink-0">Pemantau HP</div>
-        <nav className="flex gap-4 overflow-x-auto px-2 pb-1 no-scrollbar">
-          <Link href="/dashboard" className="text-sm font-medium hover:underline">Beranda</Link><Link href="/units" className="text-sm font-medium hover:underline">Unit</Link>
-          <Link href="/compare" className="text-sm font-medium hover:underline">Bandingkan</Link>
-          <Link href="/models" className="text-sm font-medium hover:underline">Model</Link>
-          <Link href="/shops" className="text-sm font-medium hover:underline">Konter</Link>
-          <Link href="/settings" className="text-sm font-medium hover:underline">Pengaturan</Link>
-        </nav>
-        <ThemeToggle />        <form action="/login" method="post" className="hidden">
-          {/* We'll handle proper logout action later */}
-        </form>
+    <div className="min-h-[100dvh] flex flex-col pb-16 sm:pb-0">
+      {/* Sticky Header Desktop & Mobile */}
+      <header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur-md">
+        <div className="flex h-14 items-center justify-between px-4 sm:px-6">
+          <div className="font-bold text-lg text-primary tracking-tight">Pemantau HP</div>
+          <DesktopNav />
+          <ThemeToggle />
+        </div>
       </header>
-      <main className="flex-1 p-4 md:p-6">
-        {children}
-      </main>
+      
+      {/* Main Content with View Transitions */}
+      <ViewTransition name="page-content">
+        <main className="flex-1 w-full max-w-7xl mx-auto p-4 sm:p-6 sm:py-8">
+          {children}
+        </main>
+      </ViewTransition>
+
+      <BottomNav />
     </div>
   )
 }
