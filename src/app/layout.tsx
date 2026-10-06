@@ -29,7 +29,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">
-        <PwaRegistry />`n        <ThemeProvider
+        <PwaRegistry />
+        <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
