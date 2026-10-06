@@ -42,9 +42,13 @@ export async function POST(request: Request) {
 
     const { model_id, observations } = parsed.data
 
-    // 3. Gunakan Service Role Key untuk operasi di balik layar (tanpa sesi login browser)
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+    
+    if (!supabaseUrl || !supabaseServiceKey) {
+      return NextResponse.json({ error: 'Konfigurasi server belum lengkap', message: 'Variabel lingkungan Supabase (URL atau Service Key) belum diatur di Vercel.' }, { status: 500, headers: corsHeaders })
+    }
+    
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
     // 4. Cari ID pemilik tunggal (Superadmin) dari tabel settings
@@ -88,6 +92,7 @@ export async function POST(request: Request) {
     }, { headers: corsHeaders })
 
   } catch (err: any) {
-    return NextResponse.json({ error: 'Kesalahan internal server', message: err?.message }, { status: 500, headers: corsHeaders })
+    console.error("API Observations Error:", err);
+    return NextResponse.json({ error: 'Kesalahan internal server', message: err?.message || String(err) }, { status: 500, headers: corsHeaders })
   }
 }
