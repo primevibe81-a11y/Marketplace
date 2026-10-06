@@ -51,18 +51,14 @@ export async function POST(request: Request) {
     
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-    // 4. Cari ID pemilik tunggal (Superadmin) dari tabel settings
-    const { data: settingsData, error: settingsError } = await supabase
-      .from('settings')
-      .select('owner_id')
-      .limit(1)
-      .single()
+    // 4. Cari ID pemilik tunggal (Superadmin) menggunakan API Admin
+    const { data: { users }, error: usersError } = await supabase.auth.admin.listUsers()
 
-    if (settingsError || !settingsData) {
+    if (usersError || !users || users.length === 0) {
       return NextResponse.json({ error: 'Gagal menemukan ID pemilik aplikasi' }, { status: 500, headers: corsHeaders })
     }
 
-    const owner_id = settingsData.owner_id
+    const owner_id = users[0].id
 
     // 5. Susun data untuk dimasukkan (Otomatis ditandai sebagai FB Marketplace dan normal)
     const payload = observations.map(obs => ({
