@@ -1,6 +1,5 @@
 import { getUnitDetail } from '@/server/units'
 import { formatRupiah } from '@/lib/format'
-import { ImeiRevealer } from './ImeiRevealer'
 import { OfferList } from './OfferList'
 import { getOffersByUnit } from '@/server/offers'
 import { getActiveShops } from '@/server/shops'
@@ -58,13 +57,7 @@ export default async function UnitDetailPage({
       <div className="grid sm:grid-cols-2 gap-6 items-start">
         <div className="space-y-6">
           <div className="rounded-lg border bg-card p-4">
-            <h2 className="font-semibold border-b pb-2 mb-3">Identitas</h2>
-            <div className="space-y-2">
-              <ImeiRevealer unitId={unit.id} initialIdentifiers={unit.unit_identifiers} />
-            </div>
-          </div>
-          <div className="rounded-lg border bg-card p-4">
-            <h2 className="font-semibold border-b pb-2 mb-3">Keuangan & Asal</h2>
+            <h2 className="font-semibold border-b pb-2 mb-3">Detail Perolehan</h2>
             <dl className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <dt className="text-muted-foreground">Asal Barang</dt>

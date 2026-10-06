@@ -5,7 +5,9 @@ import { createUnit } from '@/server/units'
 import { Button } from '@/components/ui/button'
 import { useRouter } from 'next/navigation'
 import { formatRupiah } from '@/lib/format'
-import { ImeiScanner } from '@/components/ImeiScanner'
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 
 type PhoneModel = {
   id: string
@@ -27,153 +29,112 @@ export function UnitForm({ models }: { models: PhoneModel[] }) {
   const router = useRouter()
   const [acquiredPriceStr, setAcquiredPriceStr] = useState('')
   const [extraCostStr, setExtraCostStr] = useState('')
-  const [imei1, setImei1] = useState('')
-  const [imei2, setImei2] = useState('')
   
   const [state, formAction, isPending] = useActionState(async (prevState: FormState, formData: FormData): Promise<FormState> => {
     const res = await createUnit(formData)
     if (res.success) {
-      router.push('/units') // or /units/${res.unit.id}
+      router.push('/units')
       return { success: true, unit: res.unit }
     }
     return res as FormState
   }, initialState)
 
   return (
-    <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
-      <form action={formAction} className="space-y-6">
-        <div className="space-y-4">
-          <h2 className="text-lg font-semibold border-b pb-2">Informasi Produk</h2>
-          
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Model HP</label>
-            <select name="model_id" required className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
-              <option value="">-- Pilih Model --</option>
-              {models.map(m => (
-                <option key={m.id} value={m.id}>
-                  {m.brand} {m.name} {m.ram_gb ? `(${m.ram_gb}/${m.storage_gb})` : ''}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Kondisi (Grade)</label>
-            <select name="grade" defaultValue="normal" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
-              <option value="mulus">Mulus</option>
-              <option value="normal">Normal</option>
-              <option value="minus">Minus</option>
-              <option value="rusak">Rusak</option>
-            </select>
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <h2 className="text-lg font-semibold border-b pb-2">Identitas Unik</h2>
-          <div className="grid sm:grid-cols-2 gap-4">
+    <Card className="max-w-2xl mx-auto shadow-sm">
+      <CardHeader>
+        <CardTitle>Form Registrasi Unit</CardTitle>
+      </CardHeader>
+      <form action={formAction}>
+        <CardContent className="space-y-6">
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold border-b pb-2 text-primary">Informasi Produk</h3>
+            
             <div className="space-y-2">
-              <div className="flex justify-between items-center mb-1">
-                <label className="text-sm font-medium">IMEI 1 (Wajib, 15 digit)</label>
-                <div className="w-32"><ImeiScanner onScan={setImei1} /></div>
-              </div>
-              <input 
-                name="imei1" value={imei1} onChange={(e) => setImei1(e.target.value)} 
-                required 
-                placeholder="Misal: 490154203237518"
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-mono" 
-              />
-            </div>
-            <div className="space-y-2">
-              <div className="flex justify-between items-center mb-1">
-                <label className="text-sm font-medium">IMEI 2 (Opsional)</label>
-                <div className="w-32"><ImeiScanner onScan={setImei2} /></div>
-              </div>
-              <input 
-                name="imei2" value={imei2} onChange={(e) => setImei2(e.target.value)} 
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-mono" 
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <h2 className="text-lg font-semibold border-b pb-2">Perolehan & Harga</h2>
-          <div className="grid sm:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Asal Barang</label>
-              <select name="source_type" required className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
-                <option value="lelang_gadai">Lelang/Gadai</option>
-                <option value="beli_lain">Beli Putus</option>
-                <option value="lainnya">Lainnya</option>
+              <Label htmlFor="model_id">Model HP</Label>
+              <select name="model_id" id="model_id" required className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+                <option value="">Pilih model...</option>
+                {models.map(m => (
+                  <option key={m.id} value={m.id}>
+                    {m.brand} {m.name} {m.ram_gb ? `(${m.ram_gb}/${m.storage_gb})` : ''}
+                  </option>
+                ))}
               </select>
             </div>
+            
             <div className="space-y-2">
-              <label className="text-sm font-medium">No. Ref Lot/Dokumen (Opsional)</label>
-              <input 
-                name="source_ref" 
-                placeholder="Tanpa data pribadi nasabah"
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" 
-              />
+              <Label htmlFor="grade">Grade / Kondisi</Label>
+              <select name="grade" id="grade" required className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+                <option value="normal">Normal</option>
+                <option value="mulus">Mulus</option>
+                <option value="minus">Minus</option>
+                <option value="rusak">Rusak</option>
+              </select>
             </div>
           </div>
-          <div className="grid sm:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Harga Perolehan</label>
-              <div className="relative">
-                <span className="absolute left-3 top-2.5 text-sm text-muted-foreground">Rp</span>
-                <input 
+
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold border-b pb-2 text-primary">Sumber & Harga</h3>
+            
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="source_type">Sumber Barang</Label>
+                <select name="source_type" id="source_type" required className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+                  <option value="lelang_gadai">Lelang/Gadai</option>
+                  <option value="beli_lain">Beli dari tempat lain</option>
+                  <option value="lainnya">Lainnya</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="source_ref">Referensi (Opsional)</Label>
+                <Input type="text" id="source_ref" name="source_ref" placeholder="No. Lot / Nota" />
+              </div>
+            </div>
+
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="acquired_price">Harga Perolehan (Rp)</Label>
+                <Input 
+                  type="text" 
+                  id="acquired_price"
                   name="acquired_price" 
                   required 
+                  placeholder="2.000.000"
                   value={acquiredPriceStr}
                   onChange={(e) => {
-                    const raw = e.target.value.replace(/[^0-9]/g, '')
-                    if (raw) {
-                      setAcquiredPriceStr(formatRupiah(parseInt(raw, 10))?.replace('Rp ', '') || '')
-                    } else {
-                      setAcquiredPriceStr('')
-                    }
+                    const clean = e.target.value.replace(/\D/g, '')
+                    setAcquiredPriceStr(clean ? Number(clean).toLocaleString('id-ID') : '')
                   }}
-                  className="flex h-10 w-full rounded-md border border-input bg-background pl-8 pr-3 py-2 text-sm" 
                 />
               </div>
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Biaya Ekstra/Servis (Opsional)</label>
-              <div className="relative">
-                <span className="absolute left-3 top-2.5 text-sm text-muted-foreground">Rp</span>
-                <input 
+              <div className="space-y-2">
+                <Label htmlFor="extra_cost">Biaya Perbaikan / Ekstra (Rp)</Label>
+                <Input 
+                  type="text" 
+                  id="extra_cost"
                   name="extra_cost" 
+                  placeholder="0"
                   value={extraCostStr}
                   onChange={(e) => {
-                    const raw = e.target.value.replace(/[^0-9]/g, '')
-                    if (raw) {
-                      setExtraCostStr(formatRupiah(parseInt(raw, 10))?.replace('Rp ', '') || '')
-                    } else {
-                      setExtraCostStr('')
-                    }
+                    const clean = e.target.value.replace(/\D/g, '')
+                    setExtraCostStr(clean ? Number(clean).toLocaleString('id-ID') : '')
                   }}
-                  className="flex h-10 w-full rounded-md border border-input bg-background pl-8 pr-3 py-2 text-sm" 
                 />
               </div>
             </div>
           </div>
-        </div>
 
-        {state.error && (
-          <div className="bg-destructive/15 text-destructive p-3 rounded-md text-sm font-medium">
-            {state.error}
-          </div>
-        )}
-
-        <div className="flex gap-2 pt-4">
-          <Button type="submit" className="w-full sm:w-auto" disabled={isPending}>
-            {isPending ? 'Menyimpan...' : 'Registrasi Unit'}
+          {state.error && (
+            <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md">
+              {state.error}
+            </div>
+          )}
+        </CardContent>
+        <CardFooter>
+          <Button type="submit" disabled={isPending} className="w-full">
+            {isPending ? 'Menyimpan...' : 'Simpan Unit'}
           </Button>
-          <Button type="button" variant="outline" className="w-full sm:w-auto" onClick={() => router.push('/units')} disabled={isPending}>
-            Batal
-          </Button>
-        </div>
+        </CardFooter>
       </form>
-    </div>
+    </Card>
   )
 }
