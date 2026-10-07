@@ -81,33 +81,34 @@
         overlay.innerText = `Menyimpan ${items.length} harga...`;
         document.body.appendChild(overlay);
 
-        fetch(`${targetHost}/api/observations`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${secret}`
-          },
-          body: JSON.stringify({
-            model_id: modelId,
-            observations: items
-          })
-        })
-        .then(res => res.json().then(data => ({ status: res.status, data })))
-        .then(res => {
-          if (res.status !== 200) {
-            overlay.innerText = `Gagal menyimpan: ${res.data.error}`;
+        chrome.runtime.sendMessage({
+          action: 'sendToApi',
+          data: {
+            url: `${targetHost}/api/observations`,
+            secret: secret,
+            payload: {
+              model_id: modelId,
+              observations: items
+            }
+          }
+        }, (response) => {
+          if (chrome.runtime.lastError) {
+            overlay.innerText = `Koneksi ke sistem background gagal: ${chrome.runtime.lastError.message}`;
             setTimeout(() => { overlay.remove(); resolve(false); }, 3000);
+            return;
+          }
+
+          if (!response || !response.success) {
+            const errDetail = response?.res?.data?.error || response?.error || 'Tidak diketahui';
+            overlay.innerText = `Gagal menyimpan: ${errDetail}`;
+            setTimeout(() => { overlay.remove(); resolve(false); }, 4000);
           } else {
             overlay.innerText = `Sukses menyimpan ${items.length} harga! Menutup tab...`;
             setTimeout(() => { 
               resolve(true); 
-              window.close(); // Coba tutup tab
+              window.close();
             }, 1500);
           }
-        })
-        .catch(err => {
-          overlay.innerText = `Koneksi gagal! Pastikan server jalan.`;
-          setTimeout(() => { overlay.remove(); resolve(false); }, 3000);
         });
       });
     });
