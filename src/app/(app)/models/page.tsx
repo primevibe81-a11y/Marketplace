@@ -1,14 +1,29 @@
 import { getModels } from '@/server/models'
 import { createClient } from '@/lib/supabase/server'
 import { ModelList } from './ModelList'
+import { summarize } from '@/lib/pricing'
 
 export default async function ModelsPage() {
   const models = await getModels()
   const supabase = await createClient()
-  const { data: estimates } = await supabase.from('latest_estimates').select('*')
+  
+  // Fetch active manual observations
+  const { data: observations } = await supabase
+    .from('market_observations')
+    .select('model_id, price')
+    .eq('listing_state', 'active')
+    
+  // Group by model_id and calculate median
   const modelsWithPrices = models.map(m => {
-    const est = estimates?.find(e => e.model_id === m.id && e.grade === 'normal')
-    return { ...m, current_price: est?.price_p50 || null }
+    const modelObs = observations?.filter(o => o.model_id === m.id).map(o => o.price) || []
+    let medianPrice = null
+    
+    if (modelObs.length > 0) {
+      const stats = summarize(modelObs, modelObs.length)
+      medianPrice = stats.median
+    }
+    
+    return { ...m, current_price: medianPrice }
   })
   
   return (

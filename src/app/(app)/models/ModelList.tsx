@@ -171,7 +171,7 @@ export function ModelList({ initialModels }: { initialModels: PhoneModel[] }) {
                   RAM: {model.ram_gb || '?'}GB | Storage: {model.storage_gb || '?'}GB
                 </p>
                 <div className="mb-4">
-                  <span className="text-xs text-muted-foreground">Est. AI: </span>
+                  <span className="text-xs text-muted-foreground">Pasaran FB: </span>
                   <span className={`font-semibold ${isWarning ? 'text-amber-600 dark:text-amber-400' : ''}`}>
                     {model.current_price ? formatRupiah(model.current_price) : 'Belum ada data'}
                   </span>
