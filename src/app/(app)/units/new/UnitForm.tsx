@@ -27,8 +27,6 @@ const initialState: FormState = { success: false }
 
 export function UnitForm({ models }: { models: PhoneModel[] }) {
   const router = useRouter()
-  const [acquiredPriceStr, setAcquiredPriceStr] = useState('')
-  const [extraCostStr, setExtraCostStr] = useState('')
   
   const [state, formAction, isPending] = useActionState(async (prevState: FormState, formData: FormData): Promise<FormState> => {
     const res = await createUnit(formData)
@@ -63,11 +61,11 @@ export function UnitForm({ models }: { models: PhoneModel[] }) {
           </div>
 
           <div className="space-y-4">
-            <h3 className="text-sm font-semibold border-b pb-2 text-primary">Sumber & Harga</h3>
+            <h3 className="text-sm font-semibold border-b pb-2 text-primary">Sumber Barang</h3>
             
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="source_type">Sumber Barang</Label>
+                <Label htmlFor="source_type">Sumber</Label>
                 <select name="source_type" id="source_type" required className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
                   <option value="lelang_gadai">Lelang/Gadai</option>
                   <option value="beli_lain">Beli dari tempat lain</option>
@@ -77,38 +75,6 @@ export function UnitForm({ models }: { models: PhoneModel[] }) {
               <div className="space-y-2">
                 <Label htmlFor="source_ref">Referensi (Opsional)</Label>
                 <Input type="text" id="source_ref" name="source_ref" placeholder="No. Lot / Nota" />
-              </div>
-            </div>
-
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="acquired_price">Harga Perolehan (Rp)</Label>
-                <Input 
-                  type="text" 
-                  id="acquired_price"
-                  name="acquired_price" 
-                  required 
-                  placeholder="2.000.000"
-                  value={acquiredPriceStr}
-                  onChange={(e) => {
-                    const clean = e.target.value.replace(/\D/g, '')
-                    setAcquiredPriceStr(clean ? Number(clean).toLocaleString('id-ID') : '')
-                  }}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="extra_cost">Biaya Perbaikan / Ekstra (Rp)</Label>
-                <Input 
-                  type="text" 
-                  id="extra_cost"
-                  name="extra_cost" 
-                  placeholder="0"
-                  value={extraCostStr}
-                  onChange={(e) => {
-                    const clean = e.target.value.replace(/\D/g, '')
-                    setExtraCostStr(clean ? Number(clean).toLocaleString('id-ID') : '')
-                  }}
-                />
               </div>
             </div>
           </div>

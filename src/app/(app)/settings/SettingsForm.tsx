@@ -22,6 +22,7 @@ export function SettingsForm({ initialData }: { initialData: any }) {
 
   return (
     <form action={formAction} className="space-y-8">
+      <input type="hidden" name="margin_target" value={initialData.margin_target || 12} />
       {state.success && (
         <div className="bg-green-100 text-green-800 p-3 rounded-md border border-green-200">
           Pengaturan berhasil disimpan!
@@ -36,17 +37,8 @@ export function SettingsForm({ initialData }: { initialData: any }) {
       <div className="grid lg:grid-cols-2 gap-8">
         {/* A. Margin & Diskon */}
         <div className="space-y-4">
-          <h2 className="text-lg font-semibold border-b pb-2">Target & Margin</h2>
+          <h2 className="text-lg font-semibold border-b pb-2">Target & Diskon</h2>
           
-          <div className="space-y-2">
-            <Label htmlFor="margin_target">Target Margin Ideal (%)</Label>
-            <div className="relative">
-              <Input type="number" id="margin_target" name="margin_target" defaultValue={initialData.margin_target} min="0" max="100" required className="pl-3 pr-8" />
-              <span className="absolute right-3 top-2 text-sm text-muted-foreground">%</span>
-            </div>
-            <p className="text-xs text-muted-foreground">Dipakai untuk menghitung batas maksimal harga beli (kulakan).</p>
-          </div>
-
           <div className="space-y-2">
             <Label htmlFor="fast_sale_threshold">Ambang Diskon Jual Cepat (%)</Label>
             <div className="relative">

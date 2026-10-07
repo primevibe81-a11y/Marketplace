@@ -10,8 +10,6 @@ const unitSchema = z.object({
   grade: z.enum(['mulus', 'normal', 'minus', 'rusak']),
   source_type: z.enum(['lelang_gadai', 'beli_lain', 'lainnya']),
   source_ref: z.string().optional(),
-  acquired_price: z.string().transform(val => parseRupiah(val)).refine(val => val !== null && val >= 0, { message: 'Harga perolehan tidak valid' }),
-  extra_cost: z.string().transform(val => parseRupiah(val) || 0).refine(val => val !== null && val >= 0, { message: 'Biaya ekstra tidak valid' }),
 })
 
 export async function createUnit(formData: FormData) {
@@ -22,8 +20,6 @@ export async function createUnit(formData: FormData) {
     grade: formData.get('grade') || 'normal',
     source_type: formData.get('source_type'),
     source_ref: formData.get('source_ref') || undefined,
-    acquired_price: formData.get('acquired_price'),
-    extra_cost: formData.get('extra_cost') || '0',
   })
 
   if (!parsed.success) {
@@ -37,8 +33,6 @@ export async function createUnit(formData: FormData) {
     grade: payload.grade,
     source_type: payload.source_type,
     source_ref: payload.source_ref || null,
-    acquired_price: payload.acquired_price,
-    extra_cost: payload.extra_cost,
   }).select('id, code').single()
 
   if (error) {

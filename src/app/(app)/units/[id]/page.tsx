@@ -87,8 +87,6 @@ export default async function UnitDetailPage({
 
         <div className="space-y-6">
           <ProfitCalculator 
-            acquiredPrice={unit.acquired_price}
-            extraCost={unit.extra_cost}
             bestBid={bestBid}
             referencePrice={ref.price}
             soldPrice={unit.sold_price}
