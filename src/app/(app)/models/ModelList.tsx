@@ -28,6 +28,7 @@ export function ModelList({ initialModels }: { initialModels: PhoneModel[] }) {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [showWatchlistOnly, setShowWatchlistOnly] = useState(false)
+  const [isSyncing, setIsSyncing] = useState(false)
 
   const [state, formAction, isPending] = useActionState(async (prevState: FormState, formData: FormData): Promise<FormState> => {
     const res = await saveModel(formData)
@@ -142,14 +143,49 @@ export function ModelList({ initialModels }: { initialModels: PhoneModel[] }) {
           onChange={(e) => setSearchTerm(e.target.value)}
           className="flex h-10 w-full sm:max-w-xs rounded-md border border-input bg-background px-3 py-2 text-sm" 
         />
-        <Button 
-          variant={showWatchlistOnly ? "default" : "outline"} 
-          onClick={() => setShowWatchlistOnly(!showWatchlistOnly)}
-          className="flex items-center gap-2"
-        >
-          <Star className={`h-4 w-4 ${showWatchlistOnly ? "fill-current" : ""}`} /> 
-          Watchlist
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            variant="default"
+            disabled={isSyncing}
+            onClick={async () => {
+              const modelsToSync = filteredModels.filter(m => m.watchlist);
+              if (modelsToSync.length === 0) return alert('Tidak ada model watchlist untuk disinkronkan.');
+              
+              setIsSyncing(true);
+              for (const m of modelsToSync) {
+                const url = `https://www.facebook.com/marketplace/search/?query=${encodeURIComponent(m.brand + ' ' + m.name)}&exact=false#auto_scrape=${m.id}`;
+                const win = window.open(url, '_blank');
+                if (!win) {
+                  alert('Pop-up diblokir browser. Izinkan pop-up untuk melanjutkan.');
+                  break;
+                }
+                await new Promise(r => {
+                  const timer = setInterval(() => {
+                    if (win.closed) {
+                      clearInterval(timer);
+                      r(true);
+                    }
+                  }, 500);
+                });
+                await new Promise(r => setTimeout(r, 2000));
+              }
+              setIsSyncing(false);
+              alert('Sinkronisasi massal selesai! Refresh halaman untuk melihat hasil.');
+            }}
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            {isSyncing ? 'Menyinkronkan...' : 'Tarik Semua Watchlist'}
+          </Button>
+
+          <Button 
+            variant={showWatchlistOnly ? "default" : "outline"} 
+            onClick={() => setShowWatchlistOnly(!showWatchlistOnly)}
+            className="flex items-center gap-2"
+          >
+            <Star className={`h-4 w-4 ${showWatchlistOnly ? "fill-current" : ""}`} /> 
+            Watchlist
+          </Button>
+        </div>
       </div>
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -178,6 +214,13 @@ export function ModelList({ initialModels }: { initialModels: PhoneModel[] }) {
                 </div>
               </div>
               <div className="flex gap-2 mt-auto">
+                <a 
+                  href={`https://www.facebook.com/marketplace/search/?query=${encodeURIComponent(model.brand + ' ' + model.name)}&exact=false#auto_scrape=${model.id}`}
+                  target="_blank" rel="noopener noreferrer"
+                  className="flex-1"
+                >
+                  <Button variant="default" size="sm" className="w-full bg-blue-600 hover:bg-blue-700 text-white">Tarik FB</Button>
+                </a>
                 <Link href={`/models/${model.id}`} className="flex-1">
                   <Button variant="secondary" size="sm" className="w-full">Detail</Button>
                 </Link>

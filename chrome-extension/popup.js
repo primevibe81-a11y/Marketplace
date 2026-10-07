@@ -31,6 +31,9 @@ document.addEventListener('DOMContentLoaded', () => {
     localStorage.setItem('fb_scraper_hostUrl', hostUrl);
     localStorage.setItem('fb_scraper_secret', secret);
 
+    // Save secret to chrome storage for content script (auto_scrape)
+    chrome.storage.local.set({ fb_scraper_secret: secret });
+
     btn.disabled = true;
     statusEl.textContent = 'Menyedot data dari layar...';
     statusEl.className = '';

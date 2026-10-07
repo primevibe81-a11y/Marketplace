@@ -5,12 +5,20 @@
   "description": "Menyedot harga HP dari Facebook Marketplace langsung ke aplikasi Pemantau HP.",
   "permissions": [
     "activeTab",
-    "scripting"
+    "scripting",
+    "storage"
   ],
   "host_permissions": [
     "https://www.facebook.com/marketplace/*",
     "https://*.vercel.app/*",
     "http://localhost/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://www.facebook.com/marketplace/*"],
+      "js": ["auto_scrape.js"],
+      "run_at": "document_end"
+    }
   ],
   "action": {
     "default_popup": "popup.html"
