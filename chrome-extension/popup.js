@@ -1,8 +1,17 @@
 document.addEventListener('DOMContentLoaded', () => {
   // Load saved values
-  document.getElementById('modelId').value = localStorage.getItem('fb_scraper_modelId') || '';
-  document.getElementById('hostUrl').value = localStorage.getItem('fb_scraper_hostUrl') || 'http://localhost:3000';
-  document.getElementById('secret').value = localStorage.getItem('fb_scraper_secret') || '';
+  const savedModelId = localStorage.getItem('fb_scraper_modelId') || '';
+  const savedHostUrl = localStorage.getItem('fb_scraper_hostUrl') || 'http://localhost:3000';
+  const savedSecret = localStorage.getItem('fb_scraper_secret') || '';
+
+  document.getElementById('modelId').value = savedModelId;
+  document.getElementById('hostUrl').value = savedHostUrl;
+  document.getElementById('secret').value = savedSecret;
+
+  // Sinkronkan selalu ke chrome.storage.local agar bisa dipakai auto_scrape
+  if (savedSecret) {
+    chrome.storage.local.set({ fb_scraper_secret: savedSecret });
+  }
 
   const btn = document.getElementById('scanBtn');
   const statusEl = document.getElementById('status');
