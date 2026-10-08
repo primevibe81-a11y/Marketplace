@@ -1,9 +1,10 @@
-import { getModelDetail, getObservations, getEstimates } from '@/server/observations'
+import { getModelDetail, getObservations } from '@/server/observations'
+import { getActiveShops } from '@/server/shops'
+import { createClient } from '@/lib/supabase/server'
 import { ObservationList } from './ObservationList'
-import { AiEstimates } from './AiEstimates'
+import { OfferList } from './OfferList'
 import Link from 'next/link'
 import { PriceChart } from '@/components/PriceChart'
-import { formatChartData } from '@/lib/chartData'
 
 export default async function ModelDetailPage({
   params,
@@ -14,10 +15,24 @@ export default async function ModelDetailPage({
 
   const model = await getModelDetail(resolvedParams.id)
   
-  const [observations, estimates] = await Promise.all([
+  const [observations, shops] = await Promise.all([
     getObservations(resolvedParams.id),
-    getEstimates(resolvedParams.id)
+    getActiveShops()
   ])
+
+  const supabase = await createClient()
+  const { data: offers } = await supabase
+    .from('offers')
+    .select('*, shops(name)')
+    .eq('model_id', resolvedParams.id)
+    .order('offered_at', { ascending: false })
+
+  // Transform data for chart (only observations since AI is removed)
+  const chartData = observations.map(obs => ({
+    date: new Date(obs.observed_at).toLocaleDateString('id-ID', { month: 'short', day: 'numeric' }),
+    price: obs.price,
+    source: 'FB'
+  })).reverse()
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
@@ -37,21 +52,16 @@ export default async function ModelDetailPage({
         </div>
       </div>
 
-      <div className="mb-6">
-        <h2 className="text-lg font-semibold mb-2">Tren Harga</h2>
-        <PriceChart data={formatChartData(observations as any, estimates as any)} />
-      </div>
-
       <div className="grid lg:grid-cols-2 gap-6 items-start">
         <div className="rounded-lg border bg-card p-4 overflow-x-auto">
-          <ObservationList modelId={model.id} observations={observations as any} currentGrade="normal" />
+          <OfferList 
+            modelId={model.id}
+            activeShops={shops}
+            offers={offers as any || []} 
+          />
         </div>
         <div className="rounded-lg border bg-card p-4 overflow-x-auto">
-          <AiEstimates 
-            modelId={model.id}
-            grade="normal"
-            estimates={estimates as any} 
-          />
+          <ObservationList modelId={model.id} observations={observations as any} currentGrade="normal" />
         </div>
       </div>
     </div>

@@ -15,6 +15,7 @@ type PhoneModel = {
   storage_gb: number | null
   watchlist: boolean
   current_price?: number | null
+  taufik_price?: number | null
 }
 
 type FormState = {
@@ -29,6 +30,8 @@ export function ModelList({ initialModels }: { initialModels: PhoneModel[] }) {
   const [searchTerm, setSearchTerm] = useState('')
   const [showWatchlistOnly, setShowWatchlistOnly] = useState(false)
   const [isSyncing, setIsSyncing] = useState(false)
+  const [brandFilter, setBrandFilter] = useState('all')
+  const [priceStatusFilter, setPriceStatusFilter] = useState('all')
 
   const [state, formAction, isPending] = useActionState(async (prevState: FormState, formData: FormData): Promise<FormState> => {
     const res = await saveModel(formData)
@@ -41,11 +44,17 @@ export function ModelList({ initialModels }: { initialModels: PhoneModel[] }) {
 
   const uniqueBrands = Array.from(new Set(initialModels.map(m => m.brand))).sort()
 
-  const filteredModels = initialModels.filter(m => 
-    (m.brand.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    m.name.toLowerCase().includes(searchTerm.toLowerCase())) &&
-    (showWatchlistOnly ? m.watchlist : true)
-  )
+  const filteredModels = initialModels.filter(m => {
+    const matchesSearch = m.brand.toLowerCase().includes(searchTerm.toLowerCase()) || m.name.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesWatchlist = showWatchlistOnly ? m.watchlist : true
+    const matchesBrand = brandFilter === 'all' ? true : m.brand === brandFilter
+    const matchesPriceStatus = 
+      priceStatusFilter === 'all' ? true : 
+      priceStatusFilter === 'has_price' ? m.current_price !== null : 
+      m.current_price === null
+
+    return matchesSearch && matchesWatchlist && matchesBrand && matchesPriceStatus
+  })
 
   filteredModels.sort((a, b) => (a.watchlist === b.watchlist ? 0 : a.watchlist ? -1 : 1))
 
@@ -136,13 +145,32 @@ export function ModelList({ initialModels }: { initialModels: PhoneModel[] }) {
       </div>
 
       <div className="flex flex-col sm:flex-row justify-between gap-4">
-        <input 
-          type="search" 
-          placeholder="Cari merek atau model..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="flex h-10 w-full sm:max-w-xs rounded-md border border-input bg-background px-3 py-2 text-sm" 
-        />
+        <div className="flex flex-1 flex-col sm:flex-row gap-2">
+          <input 
+            type="search" 
+            placeholder="Cari merek atau model..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="flex h-10 w-full sm:max-w-xs rounded-md border border-input bg-background px-3 py-2 text-sm" 
+          />
+          <select 
+            value={brandFilter} 
+            onChange={(e) => setBrandFilter(e.target.value)}
+            className="flex h-10 w-full sm:max-w-[150px] rounded-md border border-input bg-background px-3 py-2 text-sm"
+          >
+            <option value="all">Semua Merek</option>
+            {uniqueBrands.map(b => <option key={b} value={b}>{b}</option>)}
+          </select>
+          <select 
+            value={priceStatusFilter} 
+            onChange={(e) => setPriceStatusFilter(e.target.value)}
+            className="flex h-10 w-full sm:max-w-[150px] rounded-md border border-input bg-background px-3 py-2 text-sm"
+          >
+            <option value="all">Semua Status</option>
+            <option value="has_price">Sudah Ada Harga</option>
+            <option value="no_price">Belum Ada Harga</option>
+          </select>
+        </div>
         <div className="flex gap-2">
           <Button 
             variant="default"
@@ -207,11 +235,24 @@ export function ModelList({ initialModels }: { initialModels: PhoneModel[] }) {
                 <p className="text-sm text-muted-foreground mb-3">
                   RAM: {model.ram_gb || '?'}GB | Storage: {model.storage_gb || '?'}GB
                 </p>
-                <div className="mb-4">
-                  <span className="text-xs text-muted-foreground">Pasaran FB: </span>
-                  <span className={`font-semibold ${isWarning ? 'text-amber-600 dark:text-amber-400' : ''}`}>
-                    {model.current_price ? formatRupiah(model.current_price) : 'Belum ada data'}
-                  </span>
+                <div className="mb-4 space-y-1">
+                  <div>
+                    <span className="text-xs text-muted-foreground inline-block w-20">Pasaran FB: </span>
+                    <span className={`font-semibold ${isWarning ? 'text-amber-600 dark:text-amber-400' : ''}`}>
+                      {model.current_price ? formatRupiah(model.current_price) : 'Belum ada data'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-xs text-muted-foreground inline-block w-20">Taufik: </span>
+                    <span className="font-semibold text-green-600 dark:text-green-400">
+                      {model.taufik_price ? formatRupiah(model.taufik_price) : 'Belum ada tawaran'}
+                    </span>
+                    {model.taufik_price && model.current_price && (
+                      <span className="text-xs ml-2 text-muted-foreground">
+                        ({(((model.taufik_price - model.current_price) / model.current_price) * 100).toFixed(1)}%)
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
               <div className="flex gap-2 mt-auto">

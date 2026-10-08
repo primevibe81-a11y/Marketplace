@@ -63,6 +63,7 @@ export async function saveOffer(formData: FormData) {
   if (payload.unit_id) {
     revalidatePath(`/units/${payload.unit_id}`)
   }
+  revalidatePath(`/models/${payload.model_id}`)
   revalidatePath('/compare')
   return { success: true }
 }

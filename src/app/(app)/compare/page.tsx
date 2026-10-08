@@ -3,43 +3,41 @@ import { formatRupiah } from '@/lib/format'
 import Link from 'next/link'
 
 export default async function ComparePage() {
-  const { comparisonUnits, activeShops, settings } = await getCompareData()
+  const { comparisonModels, activeShops, settings } = await getCompareData()
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Perbandingan Harga</h1>
-        <p className="text-muted-foreground">Bandingkan tawaran konter dengan harga pasaran untuk stok aktif.</p>
+        <p className="text-muted-foreground">Bandingkan tawaran konter dengan harga pasaran untuk model di Watchlist.</p>
       </div>
 
       <div className="rounded-md border bg-card overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-muted/50 border-b">
             <tr>
-              <th className="p-3 text-left font-medium whitespace-nowrap">Unit / Model</th>
+              <th className="p-3 text-left font-medium whitespace-nowrap">Model</th>
               <th className="p-3 text-right font-medium whitespace-nowrap">Pasaran Acuan</th>
               {activeShops.map((shop: { id: string; name: string }) => (
                 <th key={shop.id} className="p-3 text-right font-medium whitespace-nowrap">
                   Tawaran {shop.name}
                 </th>
               ))}
-              <th className="p-3 text-right font-medium whitespace-nowrap">Diskon Jual Cepat</th>
+              <th className="p-3 text-right font-medium whitespace-nowrap">Selisih Tertinggi</th>
               <th className="p-3 text-center font-medium whitespace-nowrap">Saran Keputusan</th>
             </tr>
           </thead>
           <tbody>
-            {comparisonUnits.map((row: { unit: { id: string, code: string, status: string, phone_models: { brand: string, name: string } }, stockDays: number, refPriceInfo: { price: number | null, source: string | null }, latestOffersPerShop: Record<string, { price: number; offered_at: string } | null>, bestBid: number, discount: number, suggestion: string | null }) => (
-              <tr key={row.unit.id} className="border-b last:border-0 hover:bg-muted/30">
+            {comparisonModels.map((row: any) => (
+              <tr key={row.model.id} className="border-b last:border-0 hover:bg-muted/30">
                 <td className="p-3">
                   <div className="font-semibold text-primary hover:underline">
-                    <Link href={`/units/${row.unit.id}`}>
-                      {row.unit.phone_models.brand} {row.unit.phone_models.name}
+                    <Link href={`/models/${row.model.id}`}>
+                      {row.model.brand} {row.model.name}
                     </Link>
                   </div>
                   <div className="text-xs text-muted-foreground mt-1 flex items-center gap-2">
-                    <span className="font-mono bg-muted px-1.5 py-0.5 rounded">{row.unit.code}</span>
-                    <span className="uppercase">{row.unit.status}</span>
-                    <span>• {row.stockDays} hari</span>
+                    <span>RAM {row.model.ram_gb || '?'}GB / {row.model.storage_gb || '?'}GB</span>
                   </div>
                 </td>
                 
@@ -85,37 +83,41 @@ export default async function ComparePage() {
                 })}
 
                 <td className="p-3 text-right">
-                  {row.bestBid > 0 && (row.refPriceInfo.price ?? 0) > 0 ? (
-                    <div className="font-medium">
-                      {(row.discount * 100).toFixed(1)}%
+                  {row.bestBid > 0 && row.refPriceInfo.price ? (
+                    <div>
+                      <div className="font-semibold">
+                        {(row.discount * 100).toFixed(1)}%
+                      </div>
+                      <div className="text-[10px] text-muted-foreground mt-0.5">
+                        {formatRupiah(row.refPriceInfo.price - row.bestBid)} margin
+                      </div>
                     </div>
                   ) : (
-                    <span className="text-muted-foreground text-xs">-</span>
+                    <span className="text-muted-foreground italic text-xs">-</span>
                   )}
                 </td>
 
-                <td className="p-3 text-center">
+                <td className="p-3 text-center align-middle">
                   {row.suggestion === 'jual_ke_konter' && (
-                    <span className="inline-block px-2 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full whitespace-nowrap">
-                      Jual ke Konter
+                    <span className="inline-block bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 text-xs font-semibold px-2.5 py-1 rounded">
+                      Lempar Konter
                     </span>
                   )}
                   {row.suggestion === 'pasang_di_fb' && (
-                    <span className="inline-block px-2 py-1 bg-blue-100 text-blue-800 text-xs font-semibold rounded-full whitespace-nowrap">
-                      Pasang di FB
+                    <span className="inline-block bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 text-xs font-semibold px-2.5 py-1 rounded">
+                      Jual Sendiri (FB)
                     </span>
                   )}
                   {!row.suggestion && (
-                    <span className="text-muted-foreground text-xs italic">-</span>
+                    <span className="text-muted-foreground text-xs italic">Data kurang</span>
                   )}
                 </td>
               </tr>
             ))}
-            
-            {comparisonUnits.length === 0 && (
+            {comparisonModels.length === 0 && (
               <tr>
-                <td colSpan={activeShops.length + 4} className="p-8 text-center text-muted-foreground">
-                  Belum ada unit aktif untuk dibandingkan.
+                <td colSpan={activeShops.length + 4} className="p-6 text-center text-muted-foreground">
+                  Belum ada model yang masuk daftar Watchlist. Tambahkan dari Katalog.
                 </td>
               </tr>
             )}

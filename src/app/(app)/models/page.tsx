@@ -12,6 +12,17 @@ export default async function ModelsPage() {
     .from('market_observations')
     .select('model_id, price')
     .eq('listing_state', 'active')
+
+  // Fetch Taufik's offers
+  const { data: latestOffers } = await supabase
+    .from('latest_offers')
+    .select('model_id, price, shop_id')
+    
+  const { data: shops } = await supabase
+    .from('shops')
+    .select('id, name')
+    
+  const taufikShops = shops?.filter(s => s.name.toLowerCase().includes('taufik')).map(s => s.id) || []
     
   // Group by model_id and calculate median
   const modelsWithPrices = models.map(m => {
@@ -23,7 +34,13 @@ export default async function ModelsPage() {
       medianPrice = stats.median
     }
     
-    return { ...m, current_price: medianPrice }
+    const taufikOffer = latestOffers?.find(o => o.model_id === m.id && taufikShops.includes(o.shop_id))
+    
+    return { 
+      ...m, 
+      current_price: medianPrice,
+      taufik_price: taufikOffer ? taufikOffer.price : null
+    }
   })
   
   return (
