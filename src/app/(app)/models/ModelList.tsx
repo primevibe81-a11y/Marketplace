@@ -25,6 +25,18 @@ type FormState = {
 
 const initialState: FormState = { success: false }
 
+function buildSearchQuery(m: PhoneModel) {
+  let q = `${m.brand} ${m.name}`
+  if (m.ram_gb && m.storage_gb) {
+    q += ` ${m.ram_gb}/${m.storage_gb}`
+  } else if (m.ram_gb) {
+    q += ` ${m.ram_gb}GB`
+  } else if (m.storage_gb) {
+    q += ` ${m.storage_gb}GB`
+  }
+  return q
+}
+
 export function ModelList({ initialModels }: { initialModels: PhoneModel[] }) {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
@@ -182,7 +194,7 @@ export function ModelList({ initialModels }: { initialModels: PhoneModel[] }) {
               setIsSyncing(true);
               for (const m of modelsToSync) {
                 const hostStr = encodeURIComponent(window.location.origin);
-                const url = `https://www.facebook.com/marketplace/search/?query=${encodeURIComponent(m.brand + ' ' + m.name)}&exact=false#auto_scrape=${m.id}&host=${hostStr}`;
+                const url = `https://www.facebook.com/marketplace/search/?query=${encodeURIComponent(buildSearchQuery(m))}&exact=false#auto_scrape=${m.id}&host=${hostStr}`;
                 const win = window.open(url, '_blank');
                 if (!win) {
                   alert('Pop-up diblokir browser. Izinkan pop-up untuk melanjutkan.');
@@ -257,7 +269,7 @@ export function ModelList({ initialModels }: { initialModels: PhoneModel[] }) {
               </div>
               <div className="flex gap-2 mt-auto">
                 <a 
-                  href={`https://www.facebook.com/marketplace/search/?query=${encodeURIComponent(model.brand + ' ' + model.name)}&exact=false#auto_scrape=${model.id}&host=${encodeURIComponent(typeof window !== 'undefined' ? window.location.origin : '')}`}
+                  href={`https://www.facebook.com/marketplace/search/?query=${encodeURIComponent(buildSearchQuery(model))}&exact=false#auto_scrape=${model.id}&host=${encodeURIComponent(typeof window !== 'undefined' ? window.location.origin : '')}`}
                   target="_blank" rel="noopener noreferrer"
                   className="flex-1"
                 >
