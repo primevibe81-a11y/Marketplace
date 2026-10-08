@@ -192,13 +192,14 @@ export function ModelList({ initialModels }: { initialModels: PhoneModel[] }) {
               if (modelsToSync.length === 0) return alert('Tidak ada model watchlist untuk disinkronkan.');
               
               setIsSyncing(true);
-              for (const m of modelsToSync) {
+              let blocked = false;
+                for (const m of modelsToSync) {
                 const hostStr = encodeURIComponent(window.location.origin);
                 const url = `https://www.facebook.com/marketplace/search/?query=${encodeURIComponent(buildSearchQuery(m))}&exact=false#auto_scrape=${m.id}&host=${hostStr}`;
                 const win = window.open(url, '_blank');
                 if (!win) {
-                  alert('Pop-up diblokir browser. Izinkan pop-up untuk melanjutkan.');
-                  break;
+                  blocked = true;
+                    break;
                 }
                 await new Promise(r => {
                   const timer = setInterval(() => {
@@ -211,7 +212,11 @@ export function ModelList({ initialModels }: { initialModels: PhoneModel[] }) {
                 await new Promise(r => setTimeout(r, 2000));
               }
               setIsSyncing(false);
-              alert('Sinkronisasi massal selesai! Refresh halaman untuk melihat hasil.');
+              if (blocked) {
+                  alert("❌ GAGAL MELANJUTKAN: Pop-up otomatis diblokir browser!\n\nCARA MENGATASI (PENTING):\n1. Lihat ujung kanan kolom alamat (URL bar) Chrome.\n2. Cari ikon Pop-up dengan tanda silang merah (sebelah ikon bintang/bookmark).\n3. Klik ikon tersebut, lalu pilih 'Always allow pop-ups...' (Selalu Izinkan).\n4. Klik Done, lalu ulangi klik Tarik Semua.");
+                } else {
+                  alert('Sinkronisasi massal selesai! Refresh halaman untuk melihat hasil.');
+                }
             }}
             className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white"
           >
